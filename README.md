@@ -1,13 +1,13 @@
-= Password Reset
+# Password Reset
 
 OpenStack uses novan get-password and nova root-password to manage the admin password. However, in some cases it may be required to reset an existing password without rebuilding the instance. This method also handles the case where the private key was lost or an SSH keypair not used. 
 
 See the password-reset-demo.sh script for details on how to use this.
 
-** Preparation
+## Preparation
 Configure a webserver to host the password-reset.py script. The .userdata scripts point to the webserver to dynamically grab the reset script. The examples here use http://10.12.137.55:8181 so modify as needed.
 
-** Boot an instance with metadata
+## Boot an instance with metadata
 
 ```
   nova boot --image=rhel-7\
