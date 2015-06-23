@@ -34,7 +34,7 @@ https://people.redhat.com/~rjones/libguestfs-winsupport/7/7.1/x86_64/libguestfs-
 * Step 2. Reboot Instance to Initiate Password Reset with: "nova reboot instance"
 * Step 3. Poweron Instance with: "nova start instance"
 
-** Change metadata and reboot the system to reset the password
+## Change metadata and reboot the system to reset the password
 ```
   nova meta ${INSTANCE} set password-reset=${TIMESTAMP}
   nova reboot ${INSTANCE}
