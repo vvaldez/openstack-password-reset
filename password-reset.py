@@ -12,6 +12,7 @@ __status__ = "Prototype"
 metadata_url = "http://169.254.169.254/openstack/latest/meta_data.json"
 timestamp_file = "password-reset.timestamp"
 password_length = 8 # any length lower than this may not meet Windows complexity requirements
+known_password = "ChangeMe123!"
 
 import json, urllib2, time, string, random, subprocess, os, platform, sys, ConfigParser
 from time import sleep
@@ -135,7 +136,10 @@ def id_generator(password_length, chars=string.ascii_uppercase + string.ascii_lo
 	return ''.join(random.choice(chars) for _ in range(password_length))
 
 def reset_password_windows(password_length):
-    password = id_generator(password_length)
+    if not known_password:
+        password = id_generator(password_length)
+    else:
+        password = known_password
     write_timestamp()
     print "INFO: Resetting password to: %s" % password
     os.system('net user admin %s' % password)

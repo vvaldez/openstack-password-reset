@@ -36,6 +36,7 @@ ctrl_c() {
 }
 
 wait_for_instances() {
+  nova show ${INSTANCE} | grep -e Value -e name -e image -e " id" -e metadata -e "+--"
   echo -en "\nWaiting for ${INSTANCE} instance(s) to build "
 	while [[ $(nova list | grep BUILD) ]]
         do
@@ -43,6 +44,9 @@ wait_for_instances() {
                 sleep 2
         done
         echo ""
+  INSTANCE_ID=$(nova list | awk "/${INSTANCE} / {print \$2}")
+  PORT_ID=$(neutron port-list --device_id ${INSTANCE_ID} | awk '/ip_address/ {print $2}')
+  neutron floatingip-create --port-id ${PORT_ID} external
 }
 cmd() {
   if [ ! -z "$1" ]  
@@ -50,9 +54,12 @@ cmd() {
     CMD_TEXT=$1
     CMD_TO_RUN=$2
   fi
-  echo ""
-  echo "Press ENTER to initiate '${CMD_TEXT}'"
-  read
+  if [ ! "$3" == "--nowait" ]
+  then
+    echo ""
+    echo "Press ENTER to initiate '${CMD_TEXT}'"
+    read
+  fi
   echo "INFO: Starting command: '${CMD_TO_RUN}'"
   ${CMD_TO_RUN}
   echo "INFO: Finished with '${CMD_TEXT}'"
@@ -61,19 +68,29 @@ cmd() {
 TIMESTAMP=$(python -c "import time; print time.time()")
 echo "INFO: Using timestamp: ${TIMESTAMP}"
 
-cmd "Create ${INSTANCE} instance" "nova boot --image=${IMAGE}
+cmd "Step 0: Create ${INSTANCE} instance with no metadata" "nova boot --image=${IMAGE}
  --user-data password-reset-${INSTANCE}.userdata\
  --flavor ${FLAVOR}\
  --key-name demo\
- ${INSTANCE}"
+ ${INSTANCE}" "--nowait"
 
 wait_for_instances
 
-INSTANCE_ID=$(nova list | awk "/${INSTANCE} / {print \$2}")
-PORT_ID=$(neutron port-list --device_id ${INSTANCE_ID} | awk '/ip_address/ {print $2}')
-neutron floatingip-create --port-id ${PORT_ID} external
+cmd "Step 1: Set password reset in metadata" "nova meta ${INSTANCE} set password-reset=${TIMESTAMP}"
+cmd "Step 2: Reboot Instance to Initiate Password Reset" "nova reboot ${INSTANCE}"
+cmd "Delete ${INSTANCE} instance" "nova delete ${INSTANCE}"
 
-cmd "Step 1. Request Password Reset" "nova meta ${INSTANCE} set password-reset=${TIMESTAMP}"
-nova show ${INSTANCE} | grep -e Value -e name -e image -e id -e metadata -e "+--"
-cmd "Step 2. Reboot Instance to Initiate Password Reset" "nova reboot ${INSTANCE}"
+TIMESTAMP=$(python -c "import time; print time.time()")
+echo "INFO: Using timestamp: ${TIMESTAMP}"
+
+cmd "Step 0: Create ${INSTANCE} instance with metadata" "nova boot --image=${IMAGE}
+ --user-data password-reset-${INSTANCE}.userdata\
+ --flavor ${FLAVOR}\
+ --meta password-reset="${TIMESTAMP}" \
+ --key-name demo\
+ ${INSTANCE}" "--nowait"
+
+wait_for_instances
+
+cmd "Step 1: Reboot Instance to Initiate Password Reset" "nova reboot ${INSTANCE}"
 cmd "Delete ${INSTANCE} instance" "nova delete ${INSTANCE}"
