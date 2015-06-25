@@ -36,7 +36,7 @@ ctrl_c() {
 }
 
 wait_for_instances() {
-  nova show ${INSTANCE} | grep -e Value -e name -e image -e " id" -e metadata -e "+--"
+  nova show ${INSTANCE} | grep -e Value -e " name" -e metadata -e "+--"
   echo -en "\nWaiting for ${INSTANCE} instance(s) to build "
 	while [[ $(nova list | grep BUILD) ]]
         do
