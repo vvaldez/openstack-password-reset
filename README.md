@@ -4,20 +4,20 @@
 
 OpenStack uses a few different methods to manage authentication into the instance. First of all, cloud images typically do not have a password set for the root or Administrator user. On the Linux side, root SSH is typically disabled by default. There are a few ways to connect to a Linux or Windows instance:
 * Images
-** For Linux based instances these examples refer to the **RHEL 7** cloud image https://access.redhat.com/downloads/content/69/ver=/rhel---7/7.0/x86_64/product-downloads
-** For Windows based instances these examples refer to the **cloudbase-init** image: http://www.cloudbase.it/cloud-init-for-windows-instances/
+  * For Linux based instances these examples refer to the **RHEL 7** cloud image https://access.redhat.com/downloads/content/69/ver=/rhel---7/7.0/x86_64/product-downloads
+  * For Windows based instances these examples refer to the **cloudbase-init** image: http://www.cloudbase.it/cloud-init-for-windows-instances/
 * Using SSH keys
-** If an SSH keypair is used, the public key is injected via cloud-init for Linux so the private key can be used to SSH in as a user. For RHEL this is cloud-user.
-** For Windows, cloudbase-init creates an admin user and generates a random password. The public key is used to encrypt the password and post it to the metadata service. The password is retrievable via **nova get-password**.
+  * If an SSH keypair is used, the public key is injected via cloud-init for Linux so the private key can be used to SSH in as a user. For RHEL this is cloud-user.
+  * For Windows, cloudbase-init creates an admin user and generates a random password. The public key is used to encrypt the password and post it to the metadata service. The password is retrievable via **nova get-password**.
 * Using password retrieval
-** The **nova get-password** command can be used to retrieve a password from the metadata service. This is added by default with the Windows cloudbase-init image. For Linux this can be scripted and posted to metadata
-** The password can also be retrieved via Horizon with a small change in the Horizon configuration: https://dev.cloudwatt.com/en/blog/horizon-icehouse-retrieve-a-password-generated-by-an-instance.html
+  * The **nova get-password** command can be used to retrieve a password from the metadata service. This is added by default with the Windows cloudbase-init image. For Linux this can be scripted and posted to metadata
+  * The password can also be retrieved via Horizon with a small change in the Horizon configuration: https://dev.cloudwatt.com/en/blog/horizon-icehouse-retrieve-a-password-generated-by-an-instance.html
 * Rebuild the Instance
-** Any instance can be rebuilt with the **nova rebuild** command so the standard out-of-the box authentication experience will work. To preserve any data simply use a Cinder block volume to store state data if needed
+  * Any instance can be rebuilt with the **nova rebuild** command so the standard out-of-the box authentication experience will work. To preserve any data simply use a Cinder block volume to store state data if needed
 * Change password
-** The **nova root-password** command is intended to reset the root or Administrator account, but does not yet work on KVM-based hypervisors
+  * The **nova root-password** command is intended to reset the root or Administrator account, but does not yet work on KVM-based hypervisors
 * Password Reset
-** The scripts here add a new functionality to use both user-data and meta-data to instruct a script on the system to reset and post a new password
+  * The scripts here add a new functionality to use both user-data and meta-data to instruct a script on the system to reset and post a new password
 
 ## Prerequisites
 In order to pass in userdata and modify the password properly, ensure the following packages are installed on the KVM hypervisors:
